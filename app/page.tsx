@@ -1,101 +1,109 @@
-import Image from "next/image";
+"use client";
+import { child, getDatabase, ref, onValue, DataSnapshot } from "firebase/database";
+import { initializeApp } from "firebase/app";
+import { useEffect, useState } from "react";
+import {
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+  AreaChart,
+  Area,
+} from "recharts";
+import moment from "moment";
+
+type WaterLevelData = {
+  id: string;
+  distance: number;
+  dateTime: string;
+};
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+  
+  const firebaseConfig = {
+    databaseURL: "https://arduino-flood-alert-default-rtdb.asia-southeast1.firebasedatabase.app",
+  };
+   
+  const app = initializeApp(firebaseConfig);
+  const dbRef = ref(getDatabase(app));
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
+  // State for data
+  const [listData, setListData] = useState<WaterLevelData[]>([]);
+  const [currentHeight, setCurrentHeight] = useState<number>(0);
+
+  useEffect(() => {
+    // Function to handle data updates
+    const handleDataUpdate = (snapshot: DataSnapshot) => {
+      if (snapshot.exists()) {
+        const list = snapshot.val();
+        const updatedListData: WaterLevelData[] = [];
+        
+        // Process snapshot data and update list
+        for (const item in list) {
+          updatedListData.push({
+            id: item,
+            distance: list[item].distance,
+            dateTime: moment.unix(list[item].unixTimestamp).format("DD MMMM YYYY"),
+          });
+        }
+
+        // Sort data by date and update state
+        updatedListData.sort((a, b) => 
+          new Date(a.dateTime).getTime() - new Date(b.dateTime).getTime()
+        );
+
+        setListData(updatedListData);
+        setCurrentHeight(updatedListData[updatedListData.length - 1]?.distance || 0);
+      } else {
+        console.error("No data available");
+      }
+    };
+
+    // Set up Firebase listener and store unsubscribe function
+    const waterLevelRef = child(dbRef, `water-level`);
+    const unsubscribe = onValue(waterLevelRef, handleDataUpdate);
+
+    // Clean up the listener on component unmount
+    return () => {
+      unsubscribe(); // Properly removes the onValue listener
+    };
+  }, []);
+
+  const xAxisInterval = Math.round(listData.length / 5);
+
+  return (
+    <main className="bg-black min-w-screen flex flex-row">
+      <div className="bg-stone-900 p-8 mt-8 mb-8 mr-4 ml-8 rounded-xl w-2/12">
+        <p>Current Height</p>
+        <p className="text-9xl mt-8 text-[#82ca9d]">{currentHeight}</p>
+      </div>
+      <div className="bg-stone-900 p-8 mt-8 mb-8 mr-8 ml-4 rounded-xl w-10/12">
+        <p>Log Water Level</p>
+        <ResponsiveContainer className="mt-8 w-full" height={450}>
+          <AreaChart data={listData}>
+            <Area
+              type="monotone"
+              dataKey="distance"
+              strokeWidth={2}
+              stroke="#82ca9d"
+              fill="url(#82ca9d)"
             />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis 
+              dataKey="dateTime"     
+              padding={{ left: 30, right: 30 }} 
+              interval={xAxisInterval}
+            />
+            <YAxis dataKey="distance"/>
+            <Tooltip />
+            <Legend />
+            <Line type="monotone" dataKey="distance" stroke="#82ca9d" />
+          </AreaChart>
+        </ResponsiveContainer>
+      </div>
+    </main>
   );
 }
