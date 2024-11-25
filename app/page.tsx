@@ -57,7 +57,6 @@ export default function Home() {
         console.error("No data available");
       }
     };
-
     const waterLevelRef = child(dbRef, `water-level`);
     const unsubscribe = onValue(waterLevelRef, handleDataUpdate);
 
