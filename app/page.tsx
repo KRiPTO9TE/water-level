@@ -70,9 +70,9 @@ const CustomTooltip: FC<CustomTooltipProps> = ({ active, payload, label }) => {
   if (active && payload && payload.length) {
     return (
       <div className="custom-tooltip bg-black p-4 rounded-xl">
-        <p className="label" style={{ color: getColor(payload[0].value)}}>{payload[0].value}</p>
-        <p className="intro" style={{ color: "#fff"}}>{getHourFormat(label, undefined)}</p>
-        <p className="desc" style={{ color: getColor(payload[0].value)}}>{getStage(payload[0].value)}</p>
+        <p className="label" style={{ color: "#fff"}}>{getHourFormat(label, undefined)}</p>
+        <p className="intro text-white"> Jarak: <span style={{ color: getColor(payload[0].value)}}>{payload[0].value} cm</span></p>
+        <p className="desc text-white"> Status: <span style={{ color: getColor(payload[0].value)}}>{getStage(payload[0].value)}</span></p>
       </div>
     );
   }
@@ -169,7 +169,7 @@ export default function Home() {
   return (
     <main className="bg-black min-w-screen">
       <div className="min-w-screen flex flex-col lg:flex-row">
-        <div className="bg-stone-900 p-8 mt-8 lg:mb-8 mr-8 lg:mr-4 ml-8 rounded-xl lg:w-3/12 flex lg:flex-col flex-row justify-between lg:justify-start">
+        <div className="bg-stone-900 p-8 mt-8 lg:mb-8 mr-8 lg:mr-4 ml-8 rounded-xl lg:w-3/12 flex flex-col justify-between lg:justify-start">
           <div>
             <p style={{ color: "#ffff" }}>Current Distance</p>
             <div className="flex flex-row">
