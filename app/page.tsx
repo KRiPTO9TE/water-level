@@ -38,11 +38,11 @@ interface CustomTooltipProps {
 }
 
 const getColor = (distance: number) => {
-  if (distance < 50) {
+  if (distance < 25) {
     return "#d32f2f";
-  } else if (distance < 100) {
+  } else if (distance < 70) {
     return "#ed6c02";
-  } else if (distance < 200) {
+  } else if (distance < 100) {
     return "#ffff00";
   } else {
     return "#82ca9d";
@@ -50,11 +50,11 @@ const getColor = (distance: number) => {
 };
 
 const getStage = (distance: number) => {
-  if (distance < 50) {
+  if (distance < 25) {
     return "TENGGELAM";
-  } else if (distance < 100) {
+  } else if (distance < 70) {
     return "Waspada";
-  } else if (distance < 200) {
+  } else if (distance < 100) {
     return "Siaga";
   } else {
     return "Aman";
